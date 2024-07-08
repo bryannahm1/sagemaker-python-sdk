@@ -1731,7 +1731,10 @@ class TestModelBuilder(unittest.TestCase):
         }
         for model_id in model_ids_with_invalid_task:
             provided_task = model_ids_with_invalid_task[model_id]
-            model_builder = ModelBuilder(model=model_id, model_metadata={"HF_TASK": provided_task})
+            model_builder = ModelBuilder(
+                model=model_id, model_metadata={"HF_TASK": provided_task},
+                mode=Mode.IN_PROCESS
+                )
 
             self.assertRaisesRegex(
                 TaskNotFoundException,
