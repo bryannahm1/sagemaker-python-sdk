@@ -61,7 +61,7 @@ class LocalMultiModelServer:
         """Placeholder docstring"""
         try:
             response = requests.post(
-                f"http://{get_docker_host()}:8080/invocations",
+                f"http://{0.0.0.0}:8080/invocations",
                 data=request,
                 headers={"Content-Type": content_type, "Accept": accept},
                 timeout=600,
@@ -70,6 +70,7 @@ class LocalMultiModelServer:
             return response.content
         except Exception as e:
             raise Exception("Unable to send request to the local container server") from e
+        return (True, response)
 
     def _multi_model_server_deep_ping(self, predictor: PredictorBase):
         """Placeholder docstring"""
