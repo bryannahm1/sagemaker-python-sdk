@@ -5,6 +5,9 @@ from __future__ import absolute_import
 import requests
 import logging
 import platform
+import FastAPI
+import pipeline
+
 from pathlib import Path
 from sagemaker import Session, fw_utils
 from sagemaker.serve.utils.exceptions import LocalModelInvocationException
