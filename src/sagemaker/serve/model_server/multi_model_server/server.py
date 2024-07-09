@@ -16,6 +16,8 @@ from sagemaker.s3_utils import determine_bucket_and_prefix, parse_s3_url, s3_pat
 from sagemaker.s3 import S3Uploader
 from sagemaker.local.utils import get_docker_host
 
+app = FastAPI()
+
 MODE_DIR_BINDING = "/opt/ml/model/"
 _DEFAULT_ENV_VARS = {}
 
