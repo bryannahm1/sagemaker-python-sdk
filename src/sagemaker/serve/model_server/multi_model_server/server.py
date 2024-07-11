@@ -5,14 +5,14 @@ from __future__ import absolute_import
 import requests
 import logging
 import platform
-import FastAPI
-import pipeline
 import uvicorn
 
 from pathlib import Path
 from sagemaker import Session, fw_utils
 from sagemaker.serve.utils.exceptions import LocalModelInvocationException
 from sagemaker.base_predictor import PredictorBase
+from transformers import pipeline
+from fastapi import FastAPI
 from sagemaker.s3_utils import determine_bucket_and_prefix, parse_s3_url, s3_path_join
 from sagemaker.s3 import S3Uploader
 from sagemaker.local.utils import get_docker_host
@@ -65,7 +65,7 @@ class InProcessMultiModelServer:
     def _invoke_multi_model_server_serving(self, request: object, content_type: str, accept: str):
         """Placeholder docstring"""
         try:
-            
+
             if __name__ == "__main__":
                  uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="info")
 
