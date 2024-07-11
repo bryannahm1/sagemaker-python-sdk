@@ -397,9 +397,21 @@ class ModelBuilder(Triton, DJL, JumpStart, TGI, Transformers, TensorflowServing,
             )
             self.modes[str(Mode.LOCAL_CONTAINER)].prepare()
             return None
+        if self.mode == Mode.IN_PROCESS:
+            # init the InProcessMode object
+            self.modes[str(Mode.IN_PROCESS)] = LocalContainerMode(
+                inference_spec=self.inference_spec,
+                schema_builder=self.schema_builder,
+                session=self.sagemaker_session,
+                model_path=self.model_path,
+                env_vars=self.env_vars,
+                model_server=self.model_server,
+            )
+            self.modes[str(Mode.IN_PROCESS)].prepare()
+            return None
 
         raise ValueError(
-            "Please specify mode in: %s, %s" % (Mode.LOCAL_CONTAINER, Mode.SAGEMAKER_ENDPOINT)
+            "Please specify mode in: %s, %s" % (Mode.LOCAL_CONTAINER, Mode.SAGEMAKER_ENDPOINT, Mode.IN_PROCESS)
         )
 
     def _get_client_translators(self):
