@@ -7,6 +7,7 @@ import logging
 import platform
 import FastAPI
 import pipeline
+import uvicorn
 
 from pathlib import Path
 from sagemaker import Session, fw_utils
@@ -64,6 +65,10 @@ class InProcessMultiModelServer:
     def _invoke_multi_model_server_serving(self, request: object, content_type: str, accept: str):
         """Placeholder docstring"""
         try:
+            
+            if __name__ == "__main__":
+                 uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="info")
+
             response = requests.post(
                 f"http://{0.0.0.0}:8000/invocations",
                 data=request,
@@ -131,7 +136,7 @@ class LocalMultiModelServer:
         """Placeholder docstring"""
         try:
             response = requests.post(
-                f"http://{0.0.0.0}:8080/invocations",
+                f"http://{get_docker_host()}:8080/invocations",
                 data=request,
                 headers={"Content-Type": content_type, "Accept": accept},
                 timeout=600,
