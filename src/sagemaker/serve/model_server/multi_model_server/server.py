@@ -70,7 +70,7 @@ class InProcessMultiModelServer:
                  uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="info")
 
             response = requests.post(
-                f"http://{0.0.0.0}:8000/invocations",
+                f"http://0.0.0.0:8000/invocations",
                 data=request,
                 headers={"Content-Type": content_type, "Accept": accept},
                 timeout=600,
