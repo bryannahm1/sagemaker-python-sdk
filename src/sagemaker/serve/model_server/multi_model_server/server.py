@@ -35,6 +35,17 @@ class InProcessMultiModelServer:
         env_vars: dict,
     ):
         """Placeholder docstring"""
+        env = {
+            "SAGEMAKER_SUBMIT_DIRECTORY": "/opt/ml/model/code",
+            "SAGEMAKER_PROGRAM": "inference.py",
+            "SAGEMAKER_SERVE_SECRET_KEY": secret_key,
+            "LOCAL_PYTHON": platform.python_version(),
+        }
+        if env_vars:
+            env_vars.update(env)
+        else:
+            env_vars = env
+
         self.container = client.containers.run(
             image,
             "serve",
@@ -47,20 +58,14 @@ class InProcessMultiModelServer:
                     "mode": "rw",
                 },
             },
-            environment={
-                "SAGEMAKER_SUBMIT_DIRECTORY": "/opt/ml/model/code",
-                "SAGEMAKER_PROGRAM": "inference.py",
-                "SAGEMAKER_SERVE_SECRET_KEY": secret_key,
-                "LOCAL_PYTHON": platform.python_version(),
-                **env_vars,
-            },
+            environment=env_vars,
         )
 
     def _invoke_multi_model_server_serving(self, request: object, content_type: str, accept: str):
         """Placeholder docstring"""
         try:
             response = requests.post(
-                f"http://{0.0.0.0}:8080/invocations",
+                f"http://{0.0.0.0}:8000/invocations",
                 data=request,
                 headers={"Content-Type": content_type, "Accept": accept},
                 timeout=600,
@@ -70,8 +75,19 @@ class InProcessMultiModelServer:
         except Exception as e:
             raise Exception("Unable to send request to the local container server") from e
 
-        return (True, response)
+    def _multi_model_server_deep_ping(self, predictor: PredictorBase):
+        """Placeholder docstring"""
+        response = None
+        try:
+            response = predictor.predict(self.schema_builder.sample_input)
+            return True, response
+            # pylint: disable=broad-except
+        except Exception as e:
+            if "422 Client Error: Unprocessable Entity for url" in str(e):
+                raise LocalModelInvocationException(str(e))
+            return False, response
 
+        return (True, response)
 
 class LocalMultiModelServer:
     """Local Multi Model server instance"""
@@ -124,7 +140,6 @@ class LocalMultiModelServer:
             return response.content
         except Exception as e:
             raise Exception("Unable to send request to the local container server") from e
-        return (True, response)
 
     def _multi_model_server_deep_ping(self, predictor: PredictorBase):
         """Placeholder docstring"""
@@ -152,38 +167,47 @@ class SageMakerMultiModelServer:
         s3_model_data_url: str = None,
         image: str = None,
         env_vars: dict = None,
+        should_upload_artifacts: bool = False,
     ):
-        if s3_model_data_url:
-            bucket, key_prefix = parse_s3_url(url=s3_model_data_url)
-        else:
-            bucket, key_prefix = None, None
+        model_data_url = None
+        if _is_s3_uri(model_path):
+            model_data_url = model_path
+        elif should_upload_artifacts:
+            if s3_model_data_url:
+                bucket, key_prefix = parse_s3_url(url=s3_model_data_url)
+            else:
+                bucket, key_prefix = None, None
 
-        code_key_prefix = fw_utils.model_code_key_prefix(key_prefix, None, image)
+            code_key_prefix = fw_utils.model_code_key_prefix(key_prefix, None, image)
 
-        bucket, code_key_prefix = determine_bucket_and_prefix(
-            bucket=bucket, key_prefix=code_key_prefix, sagemaker_session=sagemaker_session
-        )
+            bucket, code_key_prefix = determine_bucket_and_prefix(
+                bucket=bucket, key_prefix=code_key_prefix, sagemaker_session=sagemaker_session
+            )
 
-        code_dir = Path(model_path).joinpath("code")
+            code_dir = Path(model_path).joinpath("code")
 
-        s3_location = s3_path_join("s3://", bucket, code_key_prefix, "code")
+            s3_location = s3_path_join("s3://", bucket, code_key_prefix, "code")
 
-        logger.debug("Uploading Multi Model Server Resources uncompressed to: %s", s3_location)
+            logger.debug("Uploading Multi Model Server Resources uncompressed to: %s", s3_location)
 
-        model_data_url = S3Uploader.upload(
-            str(code_dir),
-            s3_location,
-            None,
-            sagemaker_session,
-        )
+            model_data_url = S3Uploader.upload(
+                str(code_dir),
+                s3_location,
+                None,
+                sagemaker_session,
+            )
 
-        model_data = {
-            "S3DataSource": {
-                "CompressionType": "None",
-                "S3DataType": "S3Prefix",
-                "S3Uri": model_data_url + "/",
+        model_data = (
+            {
+                "S3DataSource": {
+                    "CompressionType": "None",
+                    "S3DataType": "S3Prefix",
+                    "S3Uri": model_data_url + "/",
+                }
             }
-        }
+            if model_data_url
+            else None
+        )
 
         if secret_key:
             env_vars = {
