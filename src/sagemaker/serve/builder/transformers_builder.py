@@ -202,6 +202,9 @@ class Transformers(ABC):
             elif overwrite_mode == Mode.LOCAL_CONTAINER:
                 self._prepare_for_mode()
                 self.mode = self.pysdk_model.mode = Mode.LOCAL_CONTAINER
+            elif overwrite_mode == Mode.IN_PROCESS:
+                self._prepare_for_mode()
+                self.mode = self.pysdk_model.mode = Mode.IN_PROCESS
             else:
                 raise ValueError("Mode %s is not supported!" % overwrite_mode)
 
