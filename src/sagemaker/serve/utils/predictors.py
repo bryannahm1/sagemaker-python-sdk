@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 import io
 from typing import Type
-
+import logging
 from sagemaker import Session
 from sagemaker.serve.mode.local_container_mode import LocalContainerMode
 from sagemaker.serve.mode.in_process_mode import InProcessMode
@@ -15,6 +15,8 @@ from sagemaker.serve.utils.types import ModelServer
 from sagemaker.serve.model_server.triton.triton_builder import TritonSerializer
 
 APPLICATION_X_NPY = "application/x-npy"
+
+logger = logging.getLogger(__name__)
 
 
 class TorchServeLocalPredictor(PredictorBase):
@@ -211,7 +213,7 @@ class TransformersLocalModePredictor(PredictorBase):
 
 
 class TransformersInProcessModePredictor(PredictorBase):
-    """Lightweight Transformers predictor for local deployment"""
+    """Lightweight Transformers predictor for in process mode deployment"""
 
     def __init__(
         self,
