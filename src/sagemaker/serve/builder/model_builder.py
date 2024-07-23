@@ -37,6 +37,7 @@ from sagemaker.serve.mode.function_pointers import Mode
 from sagemaker.serve.mode.sagemaker_endpoint_mode import SageMakerEndpointMode
 from sagemaker.serve.mode.local_container_mode import LocalContainerMode
 from sagemaker.serve.mode.in_process_mode import InProcessMode
+from sagemaker.serve.model_server.multi_model_server.inference import create_conda_env
 from sagemaker.serve.detector.pickler import save_pkl, save_xgboost
 from sagemaker.serve.builder.serve_settings import _ServeSettings
 from sagemaker.serve.builder.djl_builder import DJL
@@ -433,6 +434,8 @@ class ModelBuilder(Triton, DJL, JumpStart, TGI, Transformers, TensorflowServing,
                 env_vars=self.env_vars,
                 model_server=self.model_server,
             )
+            if self.inference_spec:
+                create_conda_env()
             self.modes[str(Mode.IN_PROCESS)].prepare()
             return None
 

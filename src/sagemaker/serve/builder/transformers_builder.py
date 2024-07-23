@@ -44,6 +44,8 @@ from sagemaker.serve.mode.function_pointers import Mode
 from sagemaker.serve.utils.telemetry_logger import _capture_telemetry
 from sagemaker.base_predictor import PredictorBase
 from sagemaker.huggingface.llm_utils import get_huggingface_model_metadata
+from sagemaker.serve.model_server.multi_model_server.inference import create_conda_env
+
 
 logger = logging.getLogger(__name__)
 DEFAULT_TIMEOUT = 1800
@@ -388,6 +390,8 @@ class Transformers(ABC):
                 image_uri=self.image_uri,
                 inference_spec=self.inference_spec,
             )
+
+        create_conda_env()
 
         self._build_transformers_env()
 
