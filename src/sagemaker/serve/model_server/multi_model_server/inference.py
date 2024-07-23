@@ -101,12 +101,12 @@ def create_conda_env():
     """Creating conda environment by running commands"""
 
     try:
-        subprocess.run('conda env create -f conda_in_process.yml', shell=True)
+        subprocess.run("conda env create -f conda_in_process.yml", shell=True)
         print("Successfully created conda environment with dependencies from .yml file.")
-        subprocess.run('conda activate conda_env', shell=True)
+        subprocess.run("conda activate conda_env", shell=True)
         print("Successfully activated conda environment.")
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to create and activate conda environment.")
+    except subprocess.CalledProcessError:
+        print("Failed to create and activate conda environment.")
 
 
 # on import, execute
