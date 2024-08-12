@@ -1,64 +1,69 @@
 """FastAPI requests"""
 
 from __future__ import absolute_import
-
 import logging
-import importlib.util
-import uvicorn
-import transformers  # noqa: F401 # pylint: disable=W0611
-
-from transformers import pipeline
-from fastapi import FastAPI, Request
 
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="Transformers In Process Server",
-    version="1.0",
-    description="A simple server",
-)
+
+try:
+    import uvicorn
+
+except ImportError:
+    logger.error("To enable in_process mode for Transformers install uvicorn from HuggingFace hub")
 
 
-@app.get("/")
-def read_root():
-    """Placeholder docstring"""
-    return {"Hello": "World"}
+try:
+    from transformers import pipeline
+
+    generator = pipeline("text-generation", model="gpt2")
+
+except ImportError:
+    logger.error(
+        "To enable in_process mode for Transformers install transformers from HuggingFace hub"
+    )
 
 
-@app.get("/generate")
-async def generate_text(prompt: Request):
-    """Placeholder docstring"""
-    logger.info("Generating Text....")
+try:
+    from fastapi import FastAPI, Request
 
-    str_prompt = await prompt.json()
+    app = FastAPI(
+        title="Transformers In Process Server",
+        version="1.0",
+        description="A simple server",
+    )
 
-    logger.info(str_prompt)
+    @app.get("/")
+    def read_root():
+        """Placeholder docstring"""
+        return {"Hello": "World"}
 
-    generated_text = generator(str_prompt, max_length=30, num_return_sequences=5, truncation=True)
-    return generated_text[0]["generated_text"]
+    @app.get("/generate")
+    async def generate_text(prompt: Request):
+        """Placeholder docstring"""
+        logger.info("Generating Text....")
 
+        str_prompt = await prompt.json()
 
-generator = pipeline("text-generation", model="gpt2")
+        logger.info(str_prompt)
 
+        generated_text = generator(
+            str_prompt, max_length=30, num_return_sequences=5, truncation=True
+        )
+        return generated_text[0]["generated_text"]
 
-@app.post("/post")
-def post(payload: dict):
-    """Placeholder docstring"""
-    return payload
+    @app.post("/post")
+    def post(payload: dict):
+        """Placeholder docstring"""
+        return payload
+
+except ImportError:
+    logger.error("To enable in_process mode for Transformers install fastapi from HuggingFace hub")
 
 
 async def main():
     """Running server locally with uvicorn"""
-    if not importlib.util.find_spec("uvicorn"):
-        raise ImportError("Unable to import uvicorn, check if uvicorn is installed")
-
-    if not importlib.util.find_spec("transformers"):
-        raise ImportError("Unable to import transformers, check if transformers is installed")
-
-    if not importlib.util.find_spec("fastapi"):
-        raise ImportError("Unable to import fastapi, check if fastapi is installed")
-
     logger.info("Running")
     config = uvicorn.Config(
         "sagemaker.app:app",
