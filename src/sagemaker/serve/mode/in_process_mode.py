@@ -77,7 +77,7 @@ class InProcessMode(
         time.sleep(1)
 
         count = 1
-        time_limit = datetime.now() + timedelta(seconds=20)
+        time_limit = datetime.now() + timedelta(seconds=5)
         healthy = True
         while True:
             final_pull = datetime.now() > time_limit
