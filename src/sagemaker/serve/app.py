@@ -42,8 +42,7 @@ class InProcessServer:
         self.server = None
         self.port = None
         self.host = None
-        # TODO: Pick up device automatically.
-        self._generator = pipeline(task, model=model_id, device="cpu")
+        self._generator = pipeline(task, model=model_id)
 
         # pylint: disable=unused-variable
         @self._router.post("/generate")
