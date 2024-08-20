@@ -10,8 +10,8 @@ from djl_python import Input
 from djl_python import Output
 
 
-class DJLPythonModel(object):
-    """Placeholder docstring"""
+class DJLPythonInference(object):
+    """A class for DJL inference"""
 
     def __init__(self) -> None:
         self.inference_spec = None
@@ -55,7 +55,7 @@ class DJLPythonModel(object):
             return cloudpickle.load(file)
 
     def load(self):
-        """Placeholder docstring"""
+        """Detecting for inference spec and loading model"""
         self.metadata = self.load_metadata()
         if "InferenceSpec" in self.metadata:
             inference_spec_path = (
@@ -75,9 +75,7 @@ class DJLPythonModel(object):
             )
 
     def initialize(self, properties):
-        """Placeholder docstring"""
-        # This method will initialize SageMaker service
-        # The essential part is loading model and inferenceSpec
+        """Initialize SageMaker service, loading model and inferenceSpec"""
         self.model_dir = properties.get("model_dir")
         self.load()
         self.initialized = True
@@ -118,7 +116,7 @@ class DJLPythonModel(object):
             return self.default_serializer.serialize(output)
 
     def inference(self, inputs: Input):
-        """Placeholder docstring"""
+        """Detects if inference spec used, returns output accordingly"""
         processed_input = self.preprocess_djl(inputs=inputs)
         if self.inference_spec:
             output = self.inference_spec.invoke(processed_input, self.model)
@@ -132,7 +130,7 @@ class DJLPythonModel(object):
         return output_data.add(processed_output)
 
 
-_service = DJLPythonModel()
+_service = DJLPythonInference()
 
 
 def handle(inputs: Input) -> Output:
